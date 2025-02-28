@@ -5,7 +5,7 @@ node_modules
 .vscode
 
 # Rust target file
-/app/target
+**/target
 
 # Foundry files
 cache
