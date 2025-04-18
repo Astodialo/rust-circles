@@ -25,9 +25,9 @@ contract SavingCircles is ISavingCircles, ReentrancyGuard, OwnableUpgradeable {
   mapping(address token => bool status) public allowedTokens;
 
   /// @custom:oz-upgrades-unsafe-allow constructor
-  constructor() {
-    _disableInitializers();
-  }
+  // constructor() {
+  //   _disableInitializers();
+  // }
 
   function initialize(address _owner) external override initializer {
     __Ownable_init_unchained(_owner);

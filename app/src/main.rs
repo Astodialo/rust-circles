@@ -13,7 +13,7 @@ use alloy::{
 sol!(
     #[sol(rpc)]
     SavingCircles,
-    "../src/contracts/abi/SavingCircles.abi"
+    "../src/contracts/bytecode/SavingCircles.abi"
 );
 
 // expect("Well... you need the abi.\nGo make it.\nFirst flatten the contract\nforge flatten -o SavingCircles.flat.sol SavingCircles.sol\nThen get the abi from the flattened contract\nsolc SavingCircles.flat.sol --abi -o abi ");
