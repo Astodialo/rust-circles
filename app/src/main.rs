@@ -1,17 +1,15 @@
 /// flatten the contract at src/contracts with `forge flatten SavingCircles.sol -o SavingCircles.flat.sol
 ///
 /// create the abi from the flat contract with `solc SavingCircles.flat.sol --via-ir --optimize --bin --abi -o abi`
-use std::str::FromStr;
-
+use alloy::rpc::types::TransactionRequest;
 use alloy::{
     hex,
-    network::{EthereumWallet, TransactionBuilder},
+    network::TransactionBuilder,
     primitives::{address, Address, U256},
     providers::{Provider, ProviderBuilder},
-    rpc::types::TransactionRequest,
-    signers::local::PrivateKeySigner,
     sol,
 };
+use SavingCircles::CircleCreated;
 
 sol!(
     #[sol(rpc)]
@@ -69,11 +67,36 @@ async fn main() -> eyre::Result<()> {
         .watch()
         .await?;
     println!("> token allowed: {}\n> txhash: {allowed}", { bread });
-    //let init = contract.initialize(addr[0]).send().await?.watch().await?;
-    //println!("{:?}", init);
-    let circle_id = contract.create(circle.into()).send().await?.watch().await?;
+    let circle_tx = contract.create(circle).send().await?;
+    let receipt = circle_tx.get_receipt().await?;
+    let tx_hash = receipt.transaction_hash;
+    println!("> circle created!\n> txhash {tx_hash:?}");
+    let created_crcl = receipt.clone().inner.logs()[0]
+        .log_decode::<CircleCreated>()
+        .expect("well... that sucks :()");
+    let circle_id = created_crcl.inner.id;
+    println!("> circle id: {:?}", circle_id);
 
-    println!("even this thing works? {circle_id:?}");
+    let circle2: ISavingCircles::Circle = ISavingCircles::Circle {
+        owner: addr[0],
+        members: vec![addr[1], addr[2], addr[4]],
+        currentIndex: U256::from(0),
+        depositAmount: U256::from(10000),
+        token: bread,
+        depositInterval: U256::from(100),
+        circleStart: U256::from(1000),
+        maxDeposits: U256::from(1000000),
+    };
+
+    let circle2_tx = contract.create(circle2).send().await?;
+    let receipt2 = circle2_tx.get_receipt().await?;
+    let tx2_hash = receipt2.transaction_hash;
+    println!("> circle created!\n> txhash {tx2_hash:?}");
+    let created_crcl2 = receipt2.clone().inner.logs()[0]
+        .log_decode::<CircleCreated>()
+        .expect("well... that sucks :()");
+    let circle2_id = created_crcl2.inner.id;
+    println!("> circle id: {:?}", circle2_id);
 
     Ok(())
 }
