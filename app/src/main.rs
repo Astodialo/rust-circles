@@ -1,3 +1,6 @@
+/// flatten the contract at src/contracts with `forge flatten SavingCircles.sol -o SavingCircles.flat.sol
+///
+/// create the abi from the flat contract with `solc SavingCircles.flat.sol --via-ir --optimize --bin --abi -o abi`
 use std::str::FromStr;
 
 use alloy::{
@@ -13,7 +16,7 @@ use alloy::{
 sol!(
     #[sol(rpc)]
     SavingCircles,
-    "../src/contracts/bytecode/SavingCircles.abi"
+    "../src/contracts/abi/SavingCircles.abi"
 );
 
 // expect("Well... you need the abi.\nGo make it.\nFirst flatten the contract\nforge flatten -o SavingCircles.flat.sol SavingCircles.sol\nThen get the abi from the flattened contract\nsolc SavingCircles.flat.sol --abi -o abi ");
@@ -25,7 +28,7 @@ async fn main() -> eyre::Result<()> {
     let addr = provider.get_accounts().await?;
 
     let bytecode = hex::decode(
-        std::fs::read_to_string("../src/contracts/bytecode/SavingCircles.bin").expect(
+        std::fs::read_to_string("../src/contracts/abi/SavingCircles.bin").expect(
             "Well... go make that bytecode.\nsolc SavingCircles.flat.sol --via-ir --optimize --bin -o bytecode\n",
         ),
     )?;
@@ -55,22 +58,22 @@ async fn main() -> eyre::Result<()> {
         maxDeposits: U256::from(1000000),
     };
 
-    let ita = contract.isTokenAllowed(bread).send().await?.watch().await?;
-    println!("yooooo:\n{ita}");
     let initialize = contract.initialize(addr[0]).send().await?.watch().await?;
-    println!("{initialize}");
+    println!("> initialiazed with address: {}\n> txhash: {initialize}", {
+        addr[0]
+    });
     let allowed = contract
         .setTokenAllowed(bread, true)
         .send()
         .await?
         .watch()
         .await?;
-    println!("{allowed}");
+    println!("> token allowed: {}\n> txhash: {allowed}", { bread });
     //let init = contract.initialize(addr[0]).send().await?.watch().await?;
     //println!("{:?}", init);
     let circle_id = contract.create(circle.into()).send().await?.watch().await?;
 
-    println!("{circle_id:?}");
+    println!("even this thing works? {circle_id:?}");
 
     Ok(())
 }
