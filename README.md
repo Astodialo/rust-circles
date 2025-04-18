@@ -1,3 +1,5 @@
+`nix develop`
+
 flatten the contract
 ```
 forge flatten src/contracts/SavingCircles.sol -o src/contracts/SavingCircles.flat.sol
